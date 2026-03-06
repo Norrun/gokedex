@@ -11,8 +11,17 @@ func main() {
 	for {
 		fmt.Print("Pokedex > ")
 		scanner.Scan()
-		rawCommand := scanner.Text()
-		commands := cleanInput(rawCommand)
-		fmt.Printf("Your command was: %s\n", commands[0])
+		rawInput := scanner.Text()
+		commandNArgsTxt := cleanInput(rawInput)
+		registry := getRegistry()
+		command, exists := registry[commandNArgsTxt[0]]
+		if exists {
+			err := command.callback()
+			if err != nil {
+				println(err)
+			}
+			continue
+		}
+		println("Unknown command")
 	}
 }

@@ -8,6 +8,7 @@ import (
 
 func main() {
 	scanner := bufio.NewScanner(os.Stdin)
+	var state []string = nil
 	for {
 		fmt.Print("Pokedex > ")
 		scanner.Scan()
@@ -15,8 +16,10 @@ func main() {
 		commandNArgsTxt := cleanInput(rawInput)
 		registry := getRegistry()
 		command, exists := registry[commandNArgsTxt[0]]
+
 		if exists {
-			err := command.callback()
+			temp, err := command.callback(commandConfig{state: state, args: commandNArgsTxt[1:]})
+			state = temp
 			if err != nil {
 				println(err)
 			}

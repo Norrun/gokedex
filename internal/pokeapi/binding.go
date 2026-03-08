@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
+
+	"github.com/Norrun/gokedex/internal/pokecache"
 )
 
 type AreaLocationResult struct {
@@ -17,6 +20,8 @@ type Area struct {
 	Name string `json:"name"`
 	URL  string `json:"url"`
 }
+
+var cache pokecache.Cache = pokecache.NewCache(time.Second * 5)
 
 func GetAreas(altUrl string) (AreaLocationResult, error) {
 	url := "https://pokeapi.co/api/v2/location-area"
@@ -36,11 +41,15 @@ func GetAreas(altUrl string) (AreaLocationResult, error) {
 }
 
 func callAPI(url string) ([]byte, error) {
+	body, exists := cache.Get(url)
+	if exists {
+		return body, nil
+	}
 	res, err := http.Get(url)
 	if err != nil {
 		return nil, err
 	}
-	body, err := io.ReadAll(res.Body)
+	body, err = io.ReadAll(res.Body)
 	res.Body.Close()
 	if res.StatusCode > 299 {
 		return nil, fmt.Errorf("Response failed with status code: %d and\nbody: %s\n", res.StatusCode, body)
@@ -48,5 +57,6 @@ func callAPI(url string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
+	cache.Add(url, body)
 	return body, nil
 }

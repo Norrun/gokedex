@@ -10,17 +10,6 @@ import (
 	"github.com/Norrun/gokedex/internal/pokecache"
 )
 
-type AreaLocationResult struct {
-	Count    int    `json:"count"`
-	Next     string `json:"next"`
-	Previous string `json:"previous"`
-	Results  []Area `json:"results"`
-}
-type Area struct {
-	Name string `json:"name"`
-	URL  string `json:"url"`
-}
-
 var cache pokecache.Cache = pokecache.NewCache(time.Second * 5)
 
 func GetAreas(altUrl string) (AreaLocationResult, error) {
@@ -39,6 +28,23 @@ func GetAreas(altUrl string) (AreaLocationResult, error) {
 	}
 	return areaLocation, nil
 }
+func GetArea(altBaseUrl, area string) (AreaLocation, error) {
+	baseUrl := "https://pokeapi.co/api/v2/location-area/"
+	if altBaseUrl != "" {
+		baseUrl = altBaseUrl
+	}
+	url := fmt.Sprintf("%s%s", baseUrl, area)
+	data, err := callAPI(url)
+	if err != nil {
+		return AreaLocation{}, err
+	}
+	areaLocation := AreaLocation{}
+	err = json.Unmarshal(data, &areaLocation)
+	if err != nil {
+		return AreaLocation{}, err
+	}
+	return areaLocation, nil
+}
 
 func callAPI(url string) ([]byte, error) {
 	body, exists := cache.Get(url)
@@ -52,7 +58,7 @@ func callAPI(url string) ([]byte, error) {
 	body, err = io.ReadAll(res.Body)
 	res.Body.Close()
 	if res.StatusCode > 299 {
-		return nil, fmt.Errorf("Response failed with status code: %d and\nbody: %s\n", res.StatusCode, body)
+		return nil, fmt.Errorf("API call failed with: \n status code: %d \nbody: %s\n Make sure you use the correct command and arguments.\n", res.StatusCode, body)
 	}
 	if err != nil {
 		return nil, err

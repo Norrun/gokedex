@@ -19,9 +19,11 @@ func main() {
 
 		if exists {
 			temp, err := command.callback(commandConfig{state: state, args: commandNArgsTxt[1:]})
-			state = temp
+
 			if err != nil {
-				println(err)
+				println(err.Error())
+			} else {
+				state = temp
 			}
 			continue
 		}

@@ -30,6 +30,11 @@ func getRegistry() map[string]cliCommand {
 			description: "TBA",
 			callback:    commandMapB,
 		},
+		"explore": {
+			name:        "explore",
+			description: "TBA",
+			callback:    commandExplore,
+		},
 	}
 }
 
@@ -62,6 +67,22 @@ func commandMapB(config commandConfig) ([]string, error) {
 		alt = config.state[1]
 	}
 	return biMap(alt)
+}
+
+func commandExplore(config commandConfig) ([]string, error) {
+	if len(config.args) == 0 {
+		println("Command requires one argument")
+		return nil, nil
+	}
+	areaTxt := config.args[0]
+	area, err := pokeapi.GetArea("", areaTxt)
+	if err != nil {
+		return nil, err
+	}
+	for _, encounter := range area.PokemonEncounters {
+		fmt.Println(encounter.Pokemon.Name)
+	}
+	return nil, nil
 }
 
 func biMap(alt string) ([]string, error) {

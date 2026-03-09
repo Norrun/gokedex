@@ -46,6 +46,24 @@ func GetArea(altBaseUrl, area string) (AreaLocation, error) {
 	return areaLocation, nil
 }
 
+func GetPokemon(altBaseUrl, name string) (Pokemon, error) {
+	baseUrl := "https://pokeapi.co/api/v2/pokemon/"
+	if altBaseUrl != "" {
+		baseUrl = altBaseUrl
+	}
+	url := fmt.Sprintf("%s%s", baseUrl, name)
+	data, err := callAPI(url)
+	if err != nil {
+		return Pokemon{}, err
+	}
+	pokemon := Pokemon{}
+	err = json.Unmarshal(data, &pokemon)
+	if err != nil {
+		return Pokemon{}, err
+	}
+	return pokemon, nil
+}
+
 func callAPI(url string) ([]byte, error) {
 	body, exists := cache.Get(url)
 	if exists {
